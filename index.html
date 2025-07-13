@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ジャムレシピアプリ</title>
+    <style>
+      body {
+        font-family: "Hiragino Kaku Gothic ProN", sans-serif;
+        background-color: #fff0f5;
+        color: #333;
+        padding: 20px;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      input,
+      select,
+      button {
+        width: 100%;
+        max-width: 400px;
+        padding: 8px;
+        margin-bottom: 10px;
+        font-size: 1em;
+      }
+      .result {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-top: 20px;
+        white-space: pre-wrap;
+      }
+      button {
+        background-color: #d63384;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #ff85c1;
+      }
+      .white-box {
+        background-color: #fff;
+        padding: 15px;
+        margin-top: 20px;
+        border: 2px solid #d63384;
+      }
+      .section-title {
+        font-weight: bold;
+        color: #d63384;
+        margin-bottom: 10px;
+        font-size: 1.2em;
+      }
+      @media print {
+        body * {
+          display: none;
+        }
+        .print-area {
+          display: block !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h2>🍓 ジャムレシピアプリ</h2>
+    <p style="font-size: 0.9em; color: #555">
+      原材料と希望糖度を入力すると、必要な砂糖量やレシピが自動で算出され、一括表示も作成できます。<br />
+      ※pH値も目安として表示します。
+    </p>
+
+    <label>主原材料:</label>
+    <input
+      type="text"
+      id="mainIngredient"
+      onkeydown="handleEnter(event, 'mainWeight')"
+    />
+
+    <label>主原材料の重量（g）:</label>
+    <input
+      type="number"
+      id="mainWeight"
+      onkeydown="handleEnter(event, 'subIngredient1')"
+    />
+
+    <label>副原材料1:</label>
+    <input
+      type="text"
+      id="subIngredient1"
+      onkeydown="handleEnter(event, 'subWeight1')"
+    />
+
+    <label>副原材料1の重量（g）:</label>
+    <input
+      type="number"
+      id="subWeight1"
+      onkeydown="handleEnter(event, 'subIngredient2')"
+    />
+
+    <label>副原材料2:</label>
+    <input
+      type="text"
+      id="subIngredient2"
+      onkeydown="handleEnter(event, 'subWeight2')"
+    />
+
+    <label>副原材料2の重量（g）:</label>
+    <input
+      type="number"
+      id="subWeight2"
+      onkeydown="handleEnter(event, 'mainSweetener')"
+    />
+
+    <label>メイン甘味料:</label>
+    <input
+      type="text"
+      id="mainSweetener"
+      placeholder="例：グラニュー糖"
+      onkeydown="handleEnter(event, 'otherSweetener')"
+    />
+
+    <label>その他の甘味料:</label>
+    <input
+      type="text"
+      id="otherSweetener"
+      placeholder="例：はちみつ"
+      onkeydown="handleEnter(event, 'otherSweetenerWeight')"
+    />
+
+    <label>その他の甘味料の重量（g）:</label>
+    <input
+      type="number"
+      id="otherSweetenerWeight"
+      onkeydown="handleEnter(event, 'spice')"
+    />
+
+    <label>スパイス:</label>
+    <select id="spice" onkeydown="handleEnter(event, 'spiceLevel')">
+      <option value="">使用しない</option>
+      <option value="シナモン">シナモン</option>
+      <option value="クローブ">クローブ</option>
+      <option value="ジンジャーパウダー">ジンジャーパウダー</option>
+      <option value="ブラックペッパー">ブラックペッパー</option>
+      <option value="唐辛子">唐辛子</option>
+      <option value="抹茶">抹茶</option>
+      <option value="紅茶葉">紅茶葉</option>
+    </select>
+
+    <label>スパイスの強さ:</label>
+    <select id="spiceLevel" onkeydown="handleEnter(event, 'pectin')">
+      <option value="">選択してください</option>
+      <option value="ほんのり">ほんのり</option>
+      <option value="普通">普通</option>
+      <option value="しっかり">しっかり</option>
+    </select>
+
+    <label>ペクチン（g）:</label>
+    <input
+      type="number"
+      id="pectin"
+      onkeydown="handleEnter(event, 'flavoring')"
+    />
+
+    <label>香料:</label>
+    <input
+      type="text"
+      id="flavoring"
+      onkeydown="handleEnter(event, 'liquor')"
+    />
+
+    <label>洋酒:</label>
+    <input
+      type="text"
+      id="liquor"
+      placeholder="例：ラム酒"
+      onkeydown="handleEnter(event, 'liquorWeight')"
+    />
+
+    <label>洋酒の重量（g）:</label>
+    <input
+      type="number"
+      id="liquorWeight"
+      onkeydown="handleEnter(event, 'jamType')"
+    />
+
+    <label>ジャムタイプ:</label>
+    <select id="jamType" onkeydown="handleEnter(event, 'targetBrix')">
+      <option value="高糖度（65%以上、常温保存可）">
+        高糖度（65%以上、瓶ごと煮沸殺菌、常温保存可）
+      </option>
+      <option value="低糖度（要冷蔵）">
+        低糖度（素材の味を活かした控えめな甘さ。55％目安、要冷蔵）
+      </option>
+      <option value="コンフィチュール（要冷蔵）">
+        コンフィチュール（果実感を残しつつ、自然な甘さで食べやすい。45％目安、要冷蔵）
+      </option>
+      <option value="ソース（要冷蔵）">
+        ソース（かけるタイプでフルーティな風味を楽しめる。30％目安。要冷蔵）
+      </option>
+    </select>
+
+    <label>糖度の目安（%）ジャムタイプを参考に入力:</label>
+    <input
+      type="number"
+      id="targetBrix"
+      value="65"
+      onkeydown="handleEnter(event, 'emptyPot')"
+    />
+
+    <button id="generateButton" onclick="generateRecipe()">レシピを表示</button>
+    <div class="result print-area" id="recipeOutput"></div>
+    <button onclick="printRecipeOnly()">🖨️ レシピを印刷する</button>
+
+    <!-- 一括表示用入力枠 -->
+    <div class="white-box">
+      <div class="section-title">🍋 一括表示用の追加情報</div>
+      <label>主原材料の原産地:</label>
+      <input
+        type="text"
+        id="origin"
+        onkeydown="handleEnter(event, 'emptyPot')"
+      />
+
+      <label>空鍋の重量（g）:</label>
+      <input
+        type="number"
+        id="emptyPot"
+        onkeydown="handleEnter(event, 'totalWithPot')"
+      />
+
+      <label>煮詰め後の鍋＋ジャムの重量（g）:</label>
+      <input
+        type="number"
+        id="totalWithPot"
+        onkeydown="handleEnter(event, 'displayAmount')"
+      />
+
+      <label>表示したい内容量（g）:</label>
+      <input
+        type="number"
+        id="displayAmount"
+        onkeydown="handleEnter(event, 'generateLabelButton')"
+      />
+    </div>
+
+    <button id="generateLabelButton" onclick="generateLabel()">
+      一括表示を作成する
+    </button>
+    <div class="result print-area" id="labelOutput"></div>
+    <button onclick="printLabelOnly()">🖨️ 一括表示を印刷する</button>
+
+    <button onclick="toggleGuide()">
+      下ごしらえ・調理のヒントを見る、たたむ
+    </button>
+
+    <div class="result print-area" id="guide" style="display: none"></div>
+
+    <footer style="margin-top: 30px; color: #5a4033; font-size: 0.95em">
+      🍓このアプリは、ご家庭での手作りジャムや、販売を目指す方の試作の目安としてご利用いただくものです。<br />
+      🍓実際に販売する際には、製造許可を受けた施設で作業を行い、必要な加熱殺菌や衛生管理を行ってください。<br />
+      🍓また、販売前には必ず保健所や検査機関に相談し、法律に沿った表示を作成してください。<br />
+      🍓本アプリで作成する内容はあくまで目安であり、ご利用はすべて自己責任でお願いいたします。<br /><br />
+      Printed from ジャムレシピアプリ | Produced by 農産工房やしろ
+    </footer>
+
+    <script>
+      let globalMainSweetenerWeight = 0;
+      let globalJamWeight = 0;
+
+      //<script>
+      const ingredientData = {
+        いちご: {
+          kcal: 34,
+          protein: 0.9,
+          fat: 0.1,
+          carb: 7.9,
+          salt: 0,
+          ph: 3.3,
+        },
+        りんご: {
+          kcal: 54,
+          protein: 0.2,
+          fat: 0.3,
+          carb: 14.1,
+          salt: 0,
+          ph: 3.6,
+        },
+        レーズン: {
+          kcal: 300,
+          protein: 2.5,
+          fat: 0.4,
+          carb: 79,
+          salt: 0,
+          ph: 3.8,
+        },
+        バター: {
+          kcal: 717,
+          protein: 0.9,
+          fat: 81,
+          carb: 0.1,
+          salt: 1.5,
+          ph: 6.0,
+        },
+        はちみつ: {
+          kcal: 294,
+          protein: 0.3,
+          fat: 0,
+          carb: 79.7,
+          salt: 0,
+          ph: 3.9,
+        },
+        グラニュー糖: {
+          kcal: 387,
+          protein: 0,
+          fat: 0,
+          carb: 99.8,
+          salt: 0,
+          ph: null,
+        },
+      };
+
+      function val(id) {
+        return document.getElementById(id)?.value || "";
+      }
+
+      function generateRecipe() {
+        const main = val("mainIngredient");
+        const weightMain = Number(val("mainWeight")) || 0;
+        const sub1 = val("subIngredient1");
+        const weightSub1 = Number(val("subWeight1")) || 0;
+        const sub2 = val("subIngredient2");
+        const weightSub2 = Number(val("subWeight2")) || 0;
+        const otherSweetener = val("otherSweetener");
+        const otherSweetenerWeight = Number(val("otherSweetenerWeight")) || 0;
+        const mainSweetener = val("mainSweetener");
+        const spice = val("spice");
+        const spiceLevel = val("spiceLevel");
+        const pectin = val("pectin");
+        const flavoring = val("flavoring");
+        const liquor = val("liquor");
+        const liquorWeight = Number(val("liquorWeight")) || 0;
+        const jamType = val("jamType");
+        const targetBrix = Number(val("targetBrix")) || 65;
+
+        const totalFruitWeight = weightMain + weightSub1 + weightSub2;
+        let jamWeight = Math.round(totalFruitWeight * 0.8);
+        globalJamWeight = jamWeight;
+
+        const totalSugar = Math.round(jamWeight * (targetBrix / 100));
+        let mainSweetenerWeight = totalSugar - otherSweetenerWeight;
+        if (mainSweetenerWeight < 0) mainSweetenerWeight = 0;
+        globalMainSweetenerWeight = mainSweetenerWeight;
+
+        let phValue =
+          ingredientData[main]?.ph !== undefined
+            ? ingredientData[main].ph
+            : "不明";
+
+        let recipe = `🍓 ジャムレシピ\n`;
+        recipe += `主原材料：${main} ${weightMain}g（pH: ${phValue}）\n`;
+        if (sub1) recipe += `副原材料1：${sub1} ${weightSub1}g\n`;
+        if (sub2) recipe += `副原材料2：${sub2} ${weightSub2}g\n`;
+        if (otherSweetener)
+          recipe += `その他甘味料：${otherSweetener} ${otherSweetenerWeight}g\n`;
+        recipe += `メイン甘味料（推定）：${mainSweetener} 約${mainSweetenerWeight}g\n`;
+        if (spice) recipe += `スパイス：${spice}（${spiceLevel}）\n`;
+        if (pectin) recipe += `ペクチン：${pectin}g\n`;
+        if (flavoring) recipe += `香料：${flavoring}\n`;
+        if (liquor) recipe += `洋酒：${liquor} ${liquorWeight}g\n`;
+        recipe += `煮詰め後の完成重量：約${jamWeight}g\n`;
+        recipe += `目標糖度：${targetBrix}%\n`;
+
+        document.getElementById("recipeOutput").innerText = recipe;
+      }
+
+      function generateLabel() {
+        const main = val("mainIngredient");
+        const origin = val("origin") || "国産";
+        const weightMain = Number(val("mainWeight")) || 0;
+        const sub1 = val("subIngredient1");
+        const weightSub1 = Number(val("subWeight1")) || 0;
+        const sub2 = val("subIngredient2");
+        const weightSub2 = Number(val("subWeight2")) || 0;
+        const mainSweetener = val("mainSweetener");
+        const otherSweetener = val("otherSweetener");
+        const otherSweetenerWeight = Number(val("otherSweetenerWeight")) || 0;
+        const spice = val("spice");
+        const liquor = val("liquor");
+        const liquorWeight = Number(val("liquorWeight")) || 0;
+        const pectin = val("pectin");
+        const flavoring = val("flavoring");
+        const jamType = val("jamType");
+        const displayAmount = Number(val("displayAmount")) || 100;
+
+        let ingredientsArray = [];
+
+        if (main)
+          ingredientsArray.push({
+            name: `${main}（${origin}）`,
+            weight: weightMain,
+          });
+        if (mainSweetener)
+          ingredientsArray.push({
+            name: mainSweetener,
+            weight: globalMainSweetenerWeight,
+          });
+        if (sub1) ingredientsArray.push({ name: sub1, weight: weightSub1 });
+        if (sub2) ingredientsArray.push({ name: sub2, weight: weightSub2 });
+        if (otherSweetener)
+          ingredientsArray.push({
+            name: otherSweetener,
+            weight: otherSweetenerWeight,
+          });
+        if (liquor)
+          ingredientsArray.push({ name: liquor, weight: liquorWeight });
+        if (spice) ingredientsArray.push({ name: spice, weight: 0 });
+
+        ingredientsArray.sort((a, b) => b.weight - a.weight);
+
+        let ingredientsStr = ingredientsArray
+          .map((item) => {
+            if (item.name === "バター") return "バター（乳成分を含む）";
+            return item.name;
+          })
+          .join("、");
+
+        let additives = [];
+        if (pectin) additives.push("ペクチン");
+        if (flavoring) additives.push("香料");
+        let fullLabel = ingredientsStr;
+        if (additives.length > 0) {
+          fullLabel += " / " + additives.join("、");
+        }
+
+        let total = { kcal: 0, protein: 0, fat: 0, carb: 0, salt: 0 };
+        const allIngredients = [
+          { name: main, weight: weightMain },
+          { name: sub1, weight: weightSub1 },
+          { name: sub2, weight: weightSub2 },
+          { name: mainSweetener, weight: globalMainSweetenerWeight },
+          { name: otherSweetener, weight: otherSweetenerWeight },
+        ];
+
+        let totalWeight = 0;
+        for (const ing of allIngredients) {
+          if (!ing.name || ing.weight === 0) continue;
+          const data = ingredientData[ing.name];
+          if (data) {
+            total.kcal += (data.kcal * ing.weight) / 100;
+            total.protein += (data.protein * ing.weight) / 100;
+            total.fat += (data.fat * ing.weight) / 100;
+            total.carb += (data.carb * ing.weight) / 100;
+            total.salt += (data.salt * ing.weight) / 100;
+            totalWeight += ing.weight;
+          }
+        }
+
+        let per100g = {
+          kcal:
+            totalWeight > 0
+              ? ((total.kcal * 100) / totalWeight).toFixed(1)
+              : "0.0",
+          protein:
+            totalWeight > 0
+              ? ((total.protein * 100) / totalWeight).toFixed(1)
+              : "0.0",
+          fat:
+            totalWeight > 0
+              ? ((total.fat * 100) / totalWeight).toFixed(1)
+              : "0.0",
+          carb:
+            totalWeight > 0
+              ? ((total.carb * 100) / totalWeight).toFixed(1)
+              : "0.0",
+          salt:
+            totalWeight > 0
+              ? ((total.salt * 100) / totalWeight).toFixed(1)
+              : "0.0",
+        };
+
+        let storageText = jamType.includes("高糖度")
+          ? "直射日光高温多湿を避け常温保存。開封後は要冷蔵10℃以下。"
+          : "要冷蔵（10℃以下）。開封後はお早めにお召し上がりください。";
+
+        let label = `<h3>🍓 一括表示ラベル</h3>`;
+        label += `<p>名称：${main}ジャム</p>`;
+        label += `<p>原材料名：${fullLabel}</p>`;
+        label += `<p>内容量：${displayAmount}g</p>`;
+        label += `<p>賞味期限：各自記入</p>`;
+        label += `<p>保存方法：${storageText}</p>`;
+        label += `<p>製造者：各自記入</p>`;
+        label += `<p>栄養成分表示（${displayAmount}g当たり 推定値）：</p>`;
+        label += `<p>エネルギー：${per100g.kcal} kcal</p>`;
+        label += `<p>たんぱく質：${per100g.protein} g</p>`;
+        label += `<p>脂質：${per100g.fat} g</p>`;
+        label += `<p>炭水化物：${per100g.carb} g</p>`;
+        label += `<p>食塩相当量：${per100g.salt} g</p>`;
+        label += `<p><strong>〈推定値〉</strong></p>`;
+
+        if (fullLabel.includes("はちみつ")) {
+          label += `<p style="color:red;">※はちみつは、1歳未満の乳児には与えないでください。</p>`;
+        }
+        if (fullLabel.includes("バター")) {
+          label += `<p style="color:red;">※本品には乳成分が含まれています。</p>`;
+        }
+        if (fullLabel.includes("クルミ")) {
+          label += `<p style="color:red;">※本品にはクルミが含まれています。</p>`;
+        }
+
+        label += `<hr><p style="color:#5a4033; font-size:0.9em;">
+            🍓原材料と希望糖度を入力すると、必要な砂糖の量の目安やレシピが自動で算出され、一括表示も作成できる便利なツールです。<br>
+            🍓本アプリを利用した際に生じたトラブルや事故について、製作者は一切の責任を負いません。<br>
+            🍓販売を予定されている場合は、必ず保健所や関係機関に相談し、法令に基づく表示を行ってください。</p>`;
+
+        document.getElementById("labelOutput").innerHTML = label;
+      }
+
+      function toggleGuide() {
+        const g = document.getElementById("guide");
+        g.style.display = g.style.display === "none" ? "block" : "none";
+        if (g.innerText === "") {
+          g.innerText = `🍽 下ごしらえ・調理のヒント：
+      - 鍋はステンレスがおすすめ。ホーローは欠けがないものを。
+      - 素材の熟し具合によって下ごしらえを工夫してください。
+      - キウイ：半分に切ってスプーンで中身をくり抜く
+      - いちご：カットまたは潰す。砂糖をまぶし水分を出してから煮込むと良い。
+      - ナス：皮をむいてアク抜き。皮を煮出した紫水で色を出し、りんごと煮る。レモンで色良く。
+      - レモン果汁やスパイスは後半に加えると香りが残ります。
+      - はちみつを使用した場合は、1歳未満の乳幼児には食べさせないでください。
+      🫙 加熱殺菌について：
+      - 高糖度（糖度65%以上）のジャムは瓶詰後に煮沸加熱殺菌可能。
+      - ジャムの中心温度が85℃で30分加熱で長期保存が可能。
+      - 加熱は瓶詰後、鍋で煮て加熱します。
+      - 自然冷却後、蓋の真ん中がへこんでいれば密封成功です。`;
+        }
+      }
+
+      function printRecipeOnly() {
+        const c = document.getElementById("recipeOutput").outerHTML;
+        const w = window.open();
+        w.document.write(c);
+        w.print();
+        w.close();
+      }
+
+      function printLabelOnly() {
+        const l = document.getElementById("labelOutput").outerHTML;
+        const w = window.open();
+        w.document.write(l);
+        w.print();
+        w.close();
+      }
+
+      function handleEnter(event, nextId) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          const next = document.getElementById(nextId);
+          if (next) next.focus();
+        }
+      }
+    </script>
+  </body>
+</html>
